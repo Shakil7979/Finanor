@@ -206,16 +206,16 @@
                 $diff = $dailyLimit - $todaySpending;
 
                 if ($todaySpending == 0) {
-                    $message = "🧘 You haven’t spent anything today. Your daily budget is <strong>{$dailyLimit} BDT</strong>. Keep it up!";
+                    $message = "🧘 You haven’t spent anything today. Your daily budget is  <strong> {$dailyLimit} BDT</strong>. Keep it up!";
                     $alertClass = "alert-info";
                 } elseif ($todaySpending >= $dailyLimit) {
-                    $message = "🔴 You've gone over your daily budget! (Spent: <strong>{$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
+                    $message = "🔴 You've gone over your daily budget! (Spent: <strong> {$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
                     $alertClass = "alert-danger";
                 } elseif ($todaySpending >= ($dailyLimit * 0.9)) {
-                    $message = "🟠 You're very close to your daily budget! (Spent: <strong>{$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
+                    $message = "🟠 You're very close to your daily budget! (Spent: <strong> {$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
                     $alertClass = "alert-warning";
                 } else {
-                    $message = "🟢 Great! You're spending wisely today. (Spent: <strong>{$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
+                    $message = "🟢 Great! You're spending wisely today. (Spent: <strong> {$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
                     $alertClass = "alert-success";
                 }
             @endphp
