@@ -13,14 +13,51 @@
     #incomeExpenseChart_filter_monthly { 
         max-height: 300px !important;  
     }
-    /* #incomeExpenseChart_filter_monthly {
-        height: 250px !important; 
-        widows:  100% !important;
-    } */ 
-    /* .box_for_emotion canvas {
-        height: 400px !important;
-        width: 100% !important;
-    } */
+    
+    /* shakil code here  */
+    .monthly-comparison-box { 
+        padding: 20px; 
+    } 
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 15px;
+        color: #374151;
+    }
+
+    .highlight {
+        font-weight: bold;
+        color: #047857; /* green */
+    }
+
+    .diff {
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .positive {
+        color: #16a34a; /* green-600 */
+    }
+
+    .negative {
+        color: #dc2626; /* red-600 */
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 12px 0;
+    }
+    .expes-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+        justify-content: space-between
+    }
+    .flex-col{
+        flex: 0 0 48%;
+    }
 </style>
 
 @section('body')
@@ -34,22 +71,67 @@
                 </div>
             @endforeach
         </div>
-        @if (count($mostExpensiveTags))
-            <div class="box mt-3">
-                <div class="box__section box__section--header">Most Expensive {{ __('models.tags') }}</div>
-                @foreach ($mostExpensiveTags as $index => $tag)
-                    <div class="box__section row row--seperate">
-                        <div class="row__column row__column--middle color-dark">
-                            @include('partials.tag', ['payload' => $tag])
-                        </div>
-                        <div class="row__column row__column--middle">
-                            <progress max="{{ $totalSpent }}" value="{{ $tag->amount }}"></progress>
-                        </div>
-                        <div class="row__column row__column--middle text-right">{!! $currency !!} {{ \App\Helper::formatNumber($tag->amount / 100) }}</div>
-                    </div>
-                @endforeach
+        @if (count($mostExpensiveTags)) 
+            <div class="expes-row"> 
+                <div class="box  flex-col">
+                    <div class="box__section box__section--header">Most Expensive {{ __('models.tags') }}</div>
+                    <div class="expense-content">
+                        @foreach ($mostExpensiveTags as $index => $tag)
+                            <div class="box__section row row--seperate">
+                                <div class="row__column row__column--middle color-dark">
+                                    @include('partials.tag', ['payload' => $tag])
+                                </div>
+                                <div class="row__column row__column--middle">
+                                    <progress max="{{ $totalSpent }}" value="{{ $tag->amount }}"></progress>
+                                </div>
+                                <div class="row__column row__column--middle text-right">{!! $currency !!} {{ \App\Helper::formatNumber($tag->amount / 100) }}</div>
+                            </div>
+                        @endforeach  
+                    </div> 
+                 </div>
+                <div class="box flex-col">
+                    <div class="box__section box__section--header">📊 Monthly Comparison</div>
+                        <!-- Monthly Comparison Box -->
+                            <div class="monthly-comparison-box"> 
+                                
+                                <div class="summary-row">
+                                    <div>Last Month:</div>
+                                    <div>৳850 saved</div>
+                                </div>
+                                
+                                <div class="summary-row highlight">
+                                    <div>This Month:</div>
+                                    <div>৳1,200 saved ✅</div>
+                                </div>
+                                
+                                <div class="summary-row diff">
+                                    <div>Difference:</div>
+                                    <div class="positive">+৳350 🔼</div>
+                                </div>
+
+                                <hr>
+
+                                <div class="summary-row">
+                                    <div>This Month's Earnings:</div>
+                                    <div>৳2,000</div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <div>This Month's Spending:</div>
+                                    <div>৳1,000</div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <div>Current Savings:</div>
+                                    <div class="positive">৳1,000</div>
+                                </div>
+                            </div> 
+                </div> 
             </div>
-        @endif
+        @endif 
+        
+        
+
         <div class="box mt-3">
             <div class="box__section box__section--header">Monthly Report for {{date('F')}}</div>
             <div class="box__section">   

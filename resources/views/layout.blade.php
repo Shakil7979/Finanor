@@ -151,6 +151,44 @@
         .budget-progreess{
             width: 100%;
         }
+
+       .alert-for-daily-balance {
+            display: flex;
+            justify-content: center;
+            padding: 12px 20px;
+            margin: 20px auto;
+            max-width: 700px;
+            font-weight: 600;
+            border-left: 6px solid;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            font-size: 16px;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .alert-warning {
+            background-color: #fef9c3;
+            color: #92400e;
+            border-color: #facc15;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        .alert-info {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-color: #3b82f6;
+        }
+
  
         </style>
         @livewireStyles
@@ -158,6 +196,37 @@
     <body class="bg-gray-50 theme-{{ Auth::check() ? Auth::user()->theme : 'light' }}">
         <div id="app">
             @if (Auth::check())
+ 
+            @php 
+
+                $todaySpending = App\Models\Spending::where('space_id', Auth::user()->id)
+                    ->whereDate('happened_on', \Carbon\Carbon::today())
+                    ->sum('amount') / 100;
+
+                $diff = $dailyLimit - $todaySpending;
+
+                if ($todaySpending == 0) {
+                    $message = "🧘 You haven’t spent anything today. Your daily budget is <strong>{$dailyLimit} BDT</strong>. Keep it up!";
+                    $alertClass = "alert-info";
+                } elseif ($todaySpending >= $dailyLimit) {
+                    $message = "🔴 You've gone over your daily budget! (Spent: <strong>{$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
+                    $alertClass = "alert-danger";
+                } elseif ($todaySpending >= ($dailyLimit * 0.9)) {
+                    $message = "🟠 You're very close to your daily budget! (Spent: <strong>{$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
+                    $alertClass = "alert-warning";
+                } else {
+                    $message = "🟢 Great! You're spending wisely today. (Spent: <strong>{$todaySpending} BDT</strong> / Limit: <strong>{$dailyLimit} BDT</strong>)";
+                    $alertClass = "alert-success";
+                }
+            @endphp
+ 
+                
+             
+ 
+            
+
+
+
                 <div class="navigation">
                     <div class="wrapper">
                         <ul class="navigation__menu">
@@ -247,6 +316,13 @@
                         </ul>
                     </div>
                 </div>
+                <div class="wrapper">
+                    <div class="alert-for-daily-balance {{ $alertClass }}">
+                        {!! $message !!}
+                    </div>
+
+                </div>
+                
             @endif
             {{-- @if (Auth::check() && Auth::user()->verification_token)
                 <div class="text-center" style="

@@ -11,6 +11,7 @@ use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\BudgetService;
 
 class DashboardController extends Controller
 {
@@ -93,6 +94,8 @@ public function getDailyIncomeData($space_id, $year, $month)
         ->toArray();
 }
 
+
+ 
 // Fetch daily expense data for the current month
 public function getDailyExpenseData($space_id, $year, $month)
 {
