@@ -44,7 +44,7 @@
         color: #dc2626; /* red-600 */
     }
 
-    hr {
+    .monthly-comparison-box hr {
         border: none;
         border-top: 1px solid #e5e7eb;
         margin: 12px 0;
