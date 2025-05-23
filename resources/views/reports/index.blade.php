@@ -9,15 +9,15 @@
             <div class="row__column">
                 <div class="card">
                     <a href="#">{{ __('reports.weekly_balance.title') }}</a>
-                    {{-- <a href="{{ route('reports.show', ['slug' => 'weekly-report']) }}">{{ __('reports.weekly_balance.title') }}</a> --}}
-                    <p class="mt-1">{!! __('reports.weekly_balance.description') !!}</p>
+                    <a href="{{ route('reports.show', ['slug' => 'weekly-report']) }}">{{ __('reports.weekly_balance.title') }}</a>
+                    {{-- <p class="mt-1">{!! __('reports.weekly_balance.description') !!}</p> --}}
                 </div>
             </div>
             <div class="row__column">
                 <div class="card">
                     <a href="#">{{ __('reports.most_expensive_tags.title') }}</a>
-                    {{-- <a href="{{ route('reports.show', ['slug' => 'most-expensive-tags']) }}">{{ __('reports.most_expensive_tags.title') }}</a> --}}
-                    <p class="mt-1">{!! __('reports.most_expensive_tags.description') !!}</p>
+                    <a href="{{ route('reports.show', ['slug' => 'most-expensive-tags']) }}">{{ __('reports.most_expensive_tags.title') }}</a>
+                    {{-- <p class="mt-1">{!! __('reports.most_expensive_tags.description') !!}</p> --}}
                 </div>
             </div>
             <div class="row__column">

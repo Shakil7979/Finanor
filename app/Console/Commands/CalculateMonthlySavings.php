@@ -36,7 +36,7 @@ class CalculateMonthlySavings extends Command
             DailySaving::updateOrCreate(
                 [
                     'space_id' => $user->id,
-                    'recorded_for' => $startOfMonth->format('Y-m-d'), // Identify record by month start
+                    'recorded_for' => $startOfMonth->format('Y-m-d'), 
                 ],
                 [
                     'amount' => $balance,

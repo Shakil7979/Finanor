@@ -5,8 +5,7 @@
 <style>
     .box_month_filter {
         display: flex;
-        gap: 19px;
-        margin-bottom: 22px;
+        gap: 19px; 
     }
 
     .box_for_emotion canvas,
@@ -58,6 +57,18 @@
     .flex-col{
         flex: 0 0 48%;
     }
+    .monthly-header .box__section.box__section--header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    @media all and (max-width: 768px) {
+        .expes-row { 
+            flex-direction: column;
+        }
+    }
 </style>
 
 @section('body')
@@ -93,51 +104,87 @@
                     <div class="box__section box__section--header">📊 Monthly Comparison</div>
                         <!-- Monthly Comparison Box -->
                             <div class="monthly-comparison-box"> 
-                                
                                 <div class="summary-row">
                                     <div>Last Month:</div>
-                                    <div>৳850 saved</div>
+                                    <div>৳{{ number_format($lastMonthSavings, 2) }} saved</div>
                                 </div>
                                 
                                 <div class="summary-row highlight">
                                     <div>This Month:</div>
-                                    <div>৳1,200 saved ✅</div>
+                                    <div>৳{{ number_format($currentSavings, 2) }} saved ✅</div>
                                 </div>
                                 
                                 <div class="summary-row diff">
                                     <div>Difference:</div>
-                                    <div class="positive">+৳350 🔼</div>
+                                    <div class="{{ $savingsDifference >= 0 ? 'positive' : 'negative' }}">
+                                        {{ $savingsDifference >= 0 ? '+' : '' }}৳{{ number_format($savingsDifference, 2) }}
+                                        {{ $savingsDifference >= 0 ? '🔼' : '🔽' }}
+                                    </div>
                                 </div>
 
                                 <hr>
 
                                 <div class="summary-row">
                                     <div>This Month's Earnings:</div>
-                                    <div>৳2,000</div>
+                                    <div>৳{{ number_format($monthlyEarnings, 2) }}</div>
                                 </div>
 
                                 <div class="summary-row">
                                     <div>This Month's Spending:</div>
-                                    <div>৳1,000</div>
+                                    <div>৳{{ number_format($monthlySpending, 2) }}</div>
                                 </div>
 
                                 <div class="summary-row">
                                     <div>Current Savings:</div>
-                                    <div class="positive">৳1,000</div>
+                                    <div class="{{ $currentSavings >= 0 ? 'positive' : 'negative' }}">
+                                        ৳{{ number_format($currentSavings, 2) }}
+                                    </div>
                                 </div>
-                            </div> 
+                            </div>
+
                 </div> 
             </div>
         @endif 
-        
+        <div class="expes-row mt-3">
+            <div class="box  flex-col">  
+                <div class="box__section box__section--header">Monthly Report for {{date('F')}}</div>  
+                <div class="box__section">   
+                    <canvas id="incomeExpenseChart" height="250"></canvas>  
+                </div>
+            </div> 
+            <div class="box  flex-col"> 
+                <div class="monthly-header">
+                    <div class="box__section box__section--header">
+                        <h3>Filter By Monthly</h3>
+                        <div class="box_month_filter">
+                            <select id="month">
+                                <option value="">Select Month</option>
+                                @for ($m = 1; $m <= 12; $m++)
+                                    <option value="{{ $m }}">{{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
+                                @endfor
+                            </select>
+                            
+                            <select id="year">
+                                <option value="">Select Year</option>
+                                @for ($y = 2023; $y <= now()->year; $y++)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div> 
+                    </div>
+                </div>
+                    <div class="box__section">   
+                        <canvas id="incomeExpenseChart_filter_monthly" height="250"></canvas> 
+                    </div>
+            </div> 
+        </div> 
         
 
-        <div class="box mt-3">
+        {{-- <div class="box mt-3">
             <div class="box__section box__section--header">Monthly Report for {{date('F')}}</div>
             <div class="box__section">   
                 <canvas id="incomeExpenseChart" height="250"></canvas>  
-            </div>
-              
+            </div> 
         </div>
 
         <div class="box mt-3">
@@ -163,9 +210,9 @@
                 <canvas id="incomeExpenseChart_filter_monthly" height="250"></canvas>
                 
 
-            </div>
-              
-        </div>
+            </div> 
+        </div> --}}
+
         <div class="box mt-3">
             <div class="box__section box__section--header">Emotion by Chart</div>
             <div class="box__section">  

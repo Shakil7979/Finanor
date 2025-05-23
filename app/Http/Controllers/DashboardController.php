@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Budget;
 use App\Models\Earning;
 use App\Models\Spending;
+use App\Models\DailySaving;
 use App\Repositories\TagRepository;
 use Illuminate\Http\Request;
 use App\Repositories\DashboardRepository;
@@ -18,68 +19,96 @@ class DashboardController extends Controller
     public function __construct(private readonly DashboardRepository $dashboardRepository, private readonly TagRepository $tagRepository)
     {
     }
+  
 
-    // public function __invoke(Request $request)
-    // {
-    //     $space_id = session('space_id');
-    //     $currentYear = date('Y');
-    //     $currentMonth = date('m');
-    //     $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
+// public function __invoke(Request $request)
+// {
+//     $space_id = session('space_id');
+//     $currentYear = date('Y');
+//     $currentMonth = date('m');
+//     $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
 
-    //     $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 3, $currentYear, $currentMonth);
+//     $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 3, $currentYear, $currentMonth);
+ 
+//     $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
+//     $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);
+ 
+//     $dailyIncome = $this->getDailyIncomeData($space_id, $currentYear, $currentMonth); 
+//     $dailyExpense = $this->getDailyExpenseData($space_id, $currentYear, $currentMonth);
 
-    //     // Convert to array to ensure proper handling
-    //     $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
-    //     $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);
-
-    //     return view('dashboard', [
-    //         'month' => date('n'),
-    //         'widgets' => $request->user()->widgets()->orderBy('sorting_index')->get(),
-    //         'totalSpent' => $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth),
-    //         'mostExpensiveTags' => $mostExpensiveTags,
-    //         'dailyBalance2' => $dailyBalance2,  // ✅ Corrected this
-    //         'totalSpent2' => $totalSpent2,
-    //         'daysInMonth' => $daysInMonth,
-    //         'dailyBalance' => $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth)
-    //     ]);
-    // } 
-    
-//     public function __invoke(Request $request)
-
+//     return view('dashboard', [
+//         'month' => date('n'),
+//         'widgets' => $request->user()->widgets()->orderBy('sorting_index')->get(),
+//         'totalSpent' => $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth),
+//         'mostExpensiveTags' => $mostExpensiveTags,
+//         'dailyBalance2' => $dailyBalance2,  
+//         'totalSpent2' => $totalSpent2,
+//         'daysInMonth' => $daysInMonth,
+//         'dailyBalance' => $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth),
+//         'dailyIncome' => $dailyIncome,   
+//         'dailyExpense' => $dailyExpense, 
+//     ]);
+// }
  
 
+    public function __invoke(Request $request)
+    {
+        $space_id = session('space_id');
+        $currentYear = date('Y');
+        $currentMonth = date('m');
+        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
 
-public function __invoke(Request $request)
-{
-    $space_id = session('space_id');
-    $currentYear = date('Y');
-    $currentMonth = date('m');
-    $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
+        $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 3, $currentYear, $currentMonth);
 
-    $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 3, $currentYear, $currentMonth);
+        $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
+        $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);
 
-    // Convert to array to ensure proper handling
-    $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
-    $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);
+        $dailyIncome = $this->getDailyIncomeData($space_id, $currentYear, $currentMonth);
+        $dailyExpense = $this->getDailyExpenseData($space_id, $currentYear, $currentMonth);
 
-    // Fetch daily income data
-    $dailyIncome = $this->getDailyIncomeData($space_id, $currentYear, $currentMonth);
-    // Fetch daily expense data
-    $dailyExpense = $this->getDailyExpenseData($space_id, $currentYear, $currentMonth);
+        // 🔸 Monthly Earnings & Spending
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $now = Carbon::now();
 
-    return view('dashboard', [
-        'month' => date('n'),
-        'widgets' => $request->user()->widgets()->orderBy('sorting_index')->get(),
-        'totalSpent' => $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth),
-        'mostExpensiveTags' => $mostExpensiveTags,
-        'dailyBalance2' => $dailyBalance2,  // ✅ Corrected this
-        'totalSpent2' => $totalSpent2,
-        'daysInMonth' => $daysInMonth,
-        'dailyBalance' => $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth),
-        'dailyIncome' => $dailyIncome,  // Pass daily income data
-        'dailyExpense' => $dailyExpense,  // Pass daily expense data
-    ]);
-}
+        $monthlyEarnings = Earning::where('space_id', $space_id)
+            ->whereBetween('happened_on', [$startOfMonth, $now])
+            ->sum('amount') / 100;
+
+        $monthlySpending = Spending::where('space_id', $space_id)
+            ->whereBetween('happened_on', [$startOfMonth, $now])
+            ->sum('amount') / 100;
+
+        $currentSavings = $monthlyEarnings - $monthlySpending;
+
+        // 🔸 Last Month Savings
+        $lastMonth = Carbon::now()->subMonthNoOverflow(); 
+        $lastMonthSavings = DailySaving::where('user_id', $space_id)
+            ->whereMonth('date', $lastMonth->month)
+            ->whereYear('date', $lastMonth->year)
+            ->value('amount') ?? 0;
+
+        $savingsDifference = $currentSavings - $lastMonthSavings;
+
+        return view('dashboard', [
+            'month' => date('n'),
+            'widgets' => $request->user()->widgets()->orderBy('sorting_index')->get(),
+            'totalSpent' => $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth),
+            'mostExpensiveTags' => $mostExpensiveTags,
+            'dailyBalance2' => $dailyBalance2,
+            'totalSpent2' => $totalSpent2,
+            'daysInMonth' => $daysInMonth,
+            'dailyBalance' => $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth),
+            'dailyIncome' => $dailyIncome,
+            'dailyExpense' => $dailyExpense,
+
+            // 🔹 Pass monthly savings data
+            'monthlyEarnings' => $monthlyEarnings,
+            'monthlySpending' => $monthlySpending,
+            'currentSavings' => $currentSavings,
+            'lastMonthSavings' => $lastMonthSavings,
+            'savingsDifference' => $savingsDifference,
+        ]);
+    }
 
 // Fetch daily income data for the current month
 public function getDailyIncomeData($space_id, $year, $month)
