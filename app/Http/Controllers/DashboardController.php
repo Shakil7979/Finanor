@@ -58,7 +58,7 @@ class DashboardController extends Controller
         $currentMonth = date('m');
         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
 
-        $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 3, $currentYear, $currentMonth);
+        $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 5, $currentYear, $currentMonth);
 
         $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
         $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);

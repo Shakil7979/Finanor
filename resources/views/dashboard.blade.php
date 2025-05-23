@@ -63,6 +63,15 @@
         align-items: center;
         border-bottom: 1px solid #ddd !important;
     }
+    #summaryPieChart {
+        max-width: 300px;
+        max-height: 300px;
+        margin: 0 auto;
+    }
+    .box_month_filter select {
+        font-size: 14px !important;
+        width: 110px;
+    }
 
     @media all and (max-width: 768px) {
         .expes-row { 
@@ -101,10 +110,10 @@
                     </div> 
                  </div>
                 <div class="box flex-col">
-                    <div class="box__section box__section--header">📊 Monthly Comparison</div>
+                    <div class="box__section box__section--header">📊 Financial Overview (This Month)</div>
                         <!-- Monthly Comparison Box -->
                             <div class="monthly-comparison-box"> 
-                                <div class="summary-row">
+                                {{-- <div class="summary-row">
                                     <div>Last Month:</div>
                                     <div>৳{{ number_format($lastMonthSavings, 2) }} saved</div>
                                 </div>
@@ -120,11 +129,11 @@
                                         {{ $savingsDifference >= 0 ? '+' : '' }}৳{{ number_format($savingsDifference, 2) }}
                                         {{ $savingsDifference >= 0 ? '🔼' : '🔽' }}
                                     </div>
-                                </div>
+                                </div> --}}
 
-                                <hr>
-
-                                <div class="summary-row">
+                                {{-- <hr>  --}}
+                                <canvas id="summaryPieChart" height="200"></canvas>
+                                {{-- <div class="summary-row">
                                     <div>This Month's Earnings:</div>
                                     <div>৳{{ number_format($monthlyEarnings, 2) }}</div>
                                 </div>
@@ -139,7 +148,7 @@
                                     <div class="{{ $currentSavings >= 0 ? 'positive' : 'negative' }}">
                                         ৳{{ number_format($currentSavings, 2) }}
                                     </div>
-                                </div>
+                                </div> --}}
                             </div>
 
                 </div> 
@@ -376,6 +385,55 @@
                 });
             }
         });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('summaryPieChart');
+
+        if (ctx) {
+            const chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Earning', 'Spending', 'Savings'],
+                    datasets: [{
+                        label: 'Monthly Summary',
+                        data: [{{ $monthlyEarnings }}, {{ $monthlySpending }}, {{ $currentSavings }}],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',   // Income
+                            'rgba(255, 99, 132, 0.8)',   // Spending
+                            'rgba(75, 192, 192, 0.8)'    // Savings
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 15, // Slight "lift" on hover
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '40%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 20,
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': {{ $currency }}' + context.raw.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     });
 </script>
 
