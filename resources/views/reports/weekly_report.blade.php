@@ -3,10 +3,10 @@
 @section('body')
     <div class="wrapper my-3">
         <h2>Weekly Report {{ $year }}</h2>
-        <div class="row mt-1">
+        {{-- <div class="row mt-1">
             <a class="mr-1" href="{{ route('reports.show', ['slug' => 'weekly-report', 'year' => $year - 1]) }}">Previous</a>
             <a href="{{ route('reports.show', ['slug' => 'weekly-report', 'year' => $year + 1]) }}">Next</a>
-        </div>
+        </div> --}}
         <div class="box mt-3">
             <div class="box__section">
                 <div class="ct-chart ct-major-twelfth"></div>
@@ -26,11 +26,14 @@
             return Math.ceil(used / 7);
         }
 
+        // var data = {
+        //     labels: [{!! implode(',', array_keys($weeks)) !!}],
+        //     series: [[{!! '"' . implode('","', $weeks) . '"' !!}]]
+        // };
         var data = {
-            labels: [{!! implode(',', array_keys($weeks)) !!}],
-            series: [[{!! '"' . implode('","', $weeks) . '"' !!}]]
+            labels: {!! json_encode(array_keys($weeks)) !!},
+            series: [{{ json_encode(array_values($weeks)) }}]
         };
-
         var currentYear = new Date().getFullYear();
         var currentMonth = 1;
         var offset = 0;
