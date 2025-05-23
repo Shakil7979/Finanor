@@ -41,7 +41,7 @@
             </div>
             <div class="row__column">
                 <div class="box">
-                    <div class="box__section box__section--header">Top 3 Expense Categories</div>
+                    <div class="box__section box__section--header">Top 3 Expense Tags</div>
                     <div class="box__section">
                         @forelse($topCategories as $tag)
                             <p>{{ $tag['name'] }}: {{ $currency }}{{ number_format($tag['total'] / 100, 2) }}</p>
@@ -64,7 +64,7 @@
         <div class="row row--gutter row--responsive mt-3">
             <div class="row__column">
                 <div class="box">
-                    <div class="box__section box__section--header">Top 3 Expense Categories</div>
+                    <div class="box__section box__section--header">Top 3 Expense Tags</div>
                     <div class="box__section">
                         @forelse($topCategories as $tag)
                             <p>{{ $tag['name'] }}: {{ $currency }}{{ number_format($tag['total'] / 100, 2) }}</p>
