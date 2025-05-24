@@ -6,7 +6,7 @@
 
 @section('body')
     <div class="max-w-sm mx-auto my-12">
-        <img class="h-12 mx-auto mb-8 sk_logo" src="/logo.png" />
+        <img class="h-[150px] mx-auto mb-8 sk_logo" src="/logo.png" />
         @if (session('alert_type') && session('alert_message'))
             @include('partials.alerts.' . session('alert_type'), ['payload' => ['classes' => 'mb-4', 'message' => session('alert_message')]])
         @endif

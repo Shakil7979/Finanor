@@ -6,7 +6,7 @@
 
 @section('body')
     <div class="max-w-sm mx-auto my-12">
-        <img class="h-12 mx-auto mb-8 sk_logo" src="/logo.png" />
+        <img class="h-[150px] mx-auto mb-0 sk_logo" src="/logo.png" />
         <div class="p-5 bg-white border rounded-md">
             <form method="POST">
                 {{ csrf_field() }}

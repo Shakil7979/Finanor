@@ -14,8 +14,8 @@
                         <li><a href="#"><i class="fas fa-rocket fa-sm"></i> {{ __('models.spaces') }}</a></li> --}}
                         <li><a href="{{ route('settings.preferences') }}"><i class="fas fa-sliders-h fa-sm"></i> {{ __('general.preferences') }}</a></li>
                         <li><a href="{{ route('settings.dashboard') }}"><i class="fas fa-home fa-sm"></i> {{ __('general.dashboard') }}</a></li>
-                        <li><a href="#"><i class="fas fa-rocket fa-sm"></i> {{ __('models.spaces') }}</a></li>
-                        {{-- <li><a href="{{ route('settings.spaces.index') }}"><i class="fas fa-rocket fa-sm"></i> {{ __('models.spaces') }}</a></li> --}}
+                        {{-- <li><a href="#"><i class="fas fa-rocket fa-sm"></i> {{ __('models.spaces') }}</a></li> --}}
+                        <li><a href="{{ route('settings.spaces.index') }}"><i class="fas fa-rocket fa-sm"></i> {{ __('models.spaces') }}</a></li>
                     </ul>
                 </div>
             </div>
