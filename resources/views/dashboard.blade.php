@@ -78,12 +78,36 @@
             flex-direction: column;
         }
     }
+
+    .dashboad-title-flex{
+        display: flex;
+        align-items: center;
+        justify-content: space-between
+    }
 </style>
 
 @section('body')
     <div class="wrapper my-3">
-        <h2>{{ __('general.dashboard') }}</h2>
-        <p class="mt-1">{{ __('calendar.months.' . $month) }} {{ date('Y') }}</p>
+        <div class="dashboad-title-flex"> 
+            <div class="dashboard-title">
+                <h2>{{ __('general.dashboard') }}</h2>
+                <p class="mt-1">{{ __('calendar.months.' . $month) }} {{ date('Y') }}</p>
+            </div>
+            <div class="dashboard-prev-month">
+                @if ($flashbackAmount)
+                    <div style="background: #f9fafb; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                        <p style="font-size: 18px; margin: 0;">
+                            🕒 One month ago, on <strong>{{ \Carbon\Carbon::parse($flashbackDate)->format('j F') }}</strong>, 
+                            you spent <strong>{{ $currency }}{{ number_format($flashbackAmount, 2) }}</strong> 
+                            on <strong>{{ $flashbackTag }}</strong>.
+                        </p>
+                        <p style="color: #718096; font-size: 14px; margin-top: 6px;">Worth it?</p>
+                    </div>
+                @endif 
+            </div>
+        </div>
+
+
         <div class="row row--gutter row--responsive my-3">
             @foreach ($widgets as $widget)
                 <div class="row__column">
@@ -189,47 +213,36 @@
         </div> 
         
 
-        {{-- <div class="box mt-3">
-            <div class="box__section box__section--header">Monthly Report for {{date('F')}}</div>
-            <div class="box__section">   
-                <canvas id="incomeExpenseChart" height="250"></canvas>  
-            </div> 
-        </div>
-
-        <div class="box mt-3">
-            <div class="box__section box__section--header">Filter By Monthly</div>
-            <div class="box__section">  
-                <div class="box_month_filter">
-                    <select id="month">
-                        <option value="">Select Month</option>
-                        @for ($m = 1; $m <= 12; $m++)
-                            <option value="{{ $m }}">{{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
-                        @endfor
-                    </select>
-                    
-                    <select id="year">
-                        <option value="">Select Year</option>
-                        @for ($y = 2023; $y <= now()->year; $y++)
-                            <option value="{{ $y }}">{{ $y }}</option>
-                        @endfor
-                    </select>
-                </div> 
- 
-                
-                <canvas id="incomeExpenseChart_filter_monthly" height="250"></canvas>
-                
-
-            </div> 
-        </div> --}}
-
-        <div class="box mt-3">
+        <div class="expes-row mt-3">
+            <div class="box flex-col">
             <div class="box__section box__section--header">Emotion by Chart</div>
-            <div class="box__section">  
-                 <div class="box_for_emotion">
-                    <emotion-chart />
-                 </div>
-            </div> 
-        </div>
+                <div class="box__section">  
+                    <div class="box_for_emotion">
+                        <emotion-chart />
+                    </div>
+                </div> 
+            </div>
+
+            <div class="box flex-col">
+                <div class="box__section box__section--header">
+                    📊 Past Me vs Present Me – Monthly Spending Battle
+                </div>
+                <div class="box__section">
+                    <div 
+                        id="pastVsPresentChartContainer"
+                        data-currency="{{ $currency }}"
+                        data-past="{{ $pastSpending }}"
+                        data-present="{{ $presentSpending }}"
+                    >
+                        <canvas id="pastVsPresentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+        
+
+
     </div>
     
 @endsection  
@@ -435,8 +448,61 @@
             });
         }
     });
+ 
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('pastVsPresentChartContainer');
+        const ctx = document.getElementById('pastVsPresentChart')?.getContext('2d');
+
+        if (container && ctx) {
+            const past = parseFloat(container.dataset.past);
+            const present = parseFloat(container.dataset.present);
+            const currency = container.dataset.currency;
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Last Month', 'This Month'],
+                    datasets: [{
+                        label: `Spending (${currency})`,
+                        data: [past, present],
+                        backgroundColor: [
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(54, 162, 235, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '“Last Month vs This Month” – Who Spent Smarter?'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: `Amount in ${currency}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
 
 
 

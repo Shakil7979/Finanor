@@ -51,64 +51,102 @@ class DashboardController extends Controller
 // }
  
 
-    public function __invoke(Request $request)
-    {
-        $space_id = session('space_id');
-        $currentYear = date('Y');
-        $currentMonth = date('m');
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
+public function __invoke(Request $request)
+{
+    $space_id = session('space_id');
+    $currency = session('selected_space_currency') ?? '৳';
+    $currentYear = date('Y');
+    $currentMonth = date('m');
+    $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
 
-        $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 5, $currentYear, $currentMonth);
+    // 🔸 Repositories
+    $mostExpensiveTags = $this->tagRepository->getMostExpensiveTags($space_id, 5, $currentYear, $currentMonth);
+    $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
+    $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);
+    $dailyIncome = $this->getDailyIncomeData($space_id, $currentYear, $currentMonth);
+    $dailyExpense = $this->getDailyExpenseData($space_id, $currentYear, $currentMonth);
 
-        $dailyBalance2 = (array) $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth);
-        $totalSpent2 = (array) $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth);
+    // 🔸 Monthly Earnings & Spending
+    $now = Carbon::now();
+    $startOfMonth = $now->copy()->startOfMonth();
+    $endOfMonth = $now->copy()->endOfMonth();
 
-        $dailyIncome = $this->getDailyIncomeData($space_id, $currentYear, $currentMonth);
-        $dailyExpense = $this->getDailyExpenseData($space_id, $currentYear, $currentMonth);
+    $monthlyEarnings = Earning::where('space_id', $space_id)
+        ->whereBetween('happened_on', [$startOfMonth, $now])
+        ->sum('amount') / 100;
 
-        // 🔸 Monthly Earnings & Spending
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $now = Carbon::now();
+    $monthlySpending = Spending::where('space_id', $space_id)
+        ->whereBetween('happened_on', [$startOfMonth, $now])
+        ->sum('amount') / 100;
 
-        $monthlyEarnings = Earning::where('space_id', $space_id)
-            ->whereBetween('happened_on', [$startOfMonth, $now])
-            ->sum('amount') / 100;
+    $currentSavings = $monthlyEarnings - $monthlySpending;
 
-        $monthlySpending = Spending::where('space_id', $space_id)
-            ->whereBetween('happened_on', [$startOfMonth, $now])
-            ->sum('amount') / 100;
+    // 🔸 Last Month Savings
+    $lastMonth = $startOfMonth->copy()->subMonthNoOverflow();
+    $lastMonthSavings = DailySaving::where('user_id', $space_id)
+        ->whereMonth('date', $lastMonth->month)
+        ->whereYear('date', $lastMonth->year)
+        ->value('amount') ?? 0;
 
-        $currentSavings = $monthlyEarnings - $monthlySpending;
+    $savingsDifference = $currentSavings - $lastMonthSavings;
 
-        // 🔸 Last Month Savings
-        $lastMonth = Carbon::now()->subMonthNoOverflow(); 
-        $lastMonthSavings = DailySaving::where('user_id', $space_id)
-            ->whereMonth('date', $lastMonth->month)
-            ->whereYear('date', $lastMonth->year)
-            ->value('amount') ?? 0;
+    // 🔸 Past Me vs Present Me – Monthly Spending Comparison
+    $thisMonthStart = $startOfMonth;
+    $thisMonthEnd = $endOfMonth;
+    $lastMonthStart = $thisMonthStart->copy()->subMonthNoOverflow();
+    $lastMonthEnd = $thisMonthEnd->copy()->subMonthNoOverflow();
 
-        $savingsDifference = $currentSavings - $lastMonthSavings;
+    $presentSpending = Spending::where('space_id', $space_id)
+        ->whereBetween('happened_on', [$thisMonthStart, $thisMonthEnd])
+        ->sum('amount') / 100;
 
-        return view('dashboard', [
-            'month' => date('n'),
-            'widgets' => $request->user()->widgets()->orderBy('sorting_index')->get(),
-            'totalSpent' => $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth),
-            'mostExpensiveTags' => $mostExpensiveTags,
-            'dailyBalance2' => $dailyBalance2,
-            'totalSpent2' => $totalSpent2,
-            'daysInMonth' => $daysInMonth,
-            'dailyBalance' => $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth),
-            'dailyIncome' => $dailyIncome,
-            'dailyExpense' => $dailyExpense,
+    $pastSpending = Spending::where('space_id', $space_id)
+        ->whereBetween('happened_on', [$lastMonthStart, $lastMonthEnd])
+        ->sum('amount') / 100;
 
-            // 🔹 Pass monthly savings data
-            'monthlyEarnings' => $monthlyEarnings,
-            'monthlySpending' => $monthlySpending,
-            'currentSavings' => $currentSavings,
-            'lastMonthSavings' => $lastMonthSavings,
-            'savingsDifference' => $savingsDifference,
-        ]);
-    }
+    // 🕒 Flashback Reminder (1 month ago today)
+    $flashbackDate = Carbon::now()->subMonthNoOverflow()->toDateString();
+
+    $flashbackSpending = Spending::where('space_id', $space_id)
+        ->whereDate('happened_on', $flashbackDate)
+        ->orderByDesc('amount')
+        ->first();
+
+    $flashbackAmount = $flashbackSpending ? $flashbackSpending->amount / 100 : null;
+    $flashbackTag = $flashbackSpending?->tag?->name ?? 'Something';
+
+
+    return view('dashboard', [
+        'month' => date('n'),
+        'widgets' => $request->user()->widgets()->orderBy('sorting_index')->get(),
+        'totalSpent' => $this->dashboardRepository->getTotalAmountSpent($currentYear, $currentMonth),
+        'mostExpensiveTags' => $mostExpensiveTags,
+        'dailyBalance2' => $dailyBalance2,
+        'totalSpent2' => $totalSpent2,
+        'daysInMonth' => $daysInMonth,
+        'dailyBalance' => $this->dashboardRepository->getDailyBalance($space_id, $currentYear, $currentMonth),
+        'dailyIncome' => $dailyIncome,
+        'dailyExpense' => $dailyExpense,
+
+        // 🔹 Monthly savings data
+        'monthlyEarnings' => $monthlyEarnings,
+        'monthlySpending' => $monthlySpending,
+        'currentSavings' => $currentSavings,
+        'lastMonthSavings' => $lastMonthSavings,
+        'savingsDifference' => $savingsDifference,
+
+        // 🔹 Past Me vs Present Me
+        'pastSpending' => $pastSpending,
+        'presentSpending' => $presentSpending,
+        'currency' => $currency,
+
+        'flashbackAmount' => $flashbackAmount,
+        'flashbackTag' => $flashbackTag,
+        'flashbackDate' => $flashbackDate,
+    ]);
+}
+
+
 
 // Fetch daily income data for the current month
 public function getDailyIncomeData($space_id, $year, $month)
