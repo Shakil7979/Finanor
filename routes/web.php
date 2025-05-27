@@ -38,6 +38,8 @@ Route::group(['middleware' => ['guest']], function () {
 
     Route::get('/register', [RegisterController::class, 'index'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
+    Route::get('/mail-verify', [RegisterController::class, 'mail_verify'])->name('mail_verify');
+    Route::post('/verification-verify', [RegisterController::class, 'verification_verify'])->name('verification.verify');
 });
 
 Route::get('/dashboard', [DashboardController::class, '__invoke']);

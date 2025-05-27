@@ -12,7 +12,8 @@ use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\BudgetService;
+use App\Services\BudgetService; 
+use Illuminate\Support\Facades\Auth; 
 
 class DashboardController extends Controller
 {
@@ -183,19 +184,23 @@ public function getChartData(Request $request)
     $year = $request->year;
     $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
 
+    $spaceId = Auth::id(); 
+
     $incomeData = [];
     $expenseData = [];
     $days = [];
 
-    // Group income data by day
-    $incomes = Earning::selectRaw('DAY(happened_on) as day, SUM(amount) as total')
+    // Group income data by day with filters
+    $incomes = Earning::selectRaw('DAY(happened_on) as day, SUM(amount) as total') 
+        ->where('space_id', $spaceId)
         ->whereMonth('happened_on', $month)
         ->whereYear('happened_on', $year)
         ->groupBy('day')
         ->pluck('total', 'day'); // key = day, value = total
 
-    // Group expense data by day
-    $expenses = Spending::selectRaw('DAY(happened_on) as day, SUM(amount) as total')
+    // Group expense data by day with filters
+    $expenses = Spending::selectRaw('DAY(happened_on) as day, SUM(amount) as total') 
+        ->where('space_id', $spaceId)
         ->whereMonth('happened_on', $month)
         ->whereYear('happened_on', $year)
         ->groupBy('day')
@@ -203,8 +208,8 @@ public function getChartData(Request $request)
 
     // Prepare chart arrays
     for ($day = 1; $day <= $daysInMonth; $day++) {
-        $incomeData[] = $incomes[$day] ?? 0;   // If not found, 0
-        $expenseData[] = $expenses[$day] ?? 0; // If not found, 0
+        $incomeData[] = $incomes[$day] ?? 0;
+        $expenseData[] = $expenses[$day] ?? 0;
         $days[] = $day;
     }
 
@@ -216,22 +221,99 @@ public function getChartData(Request $request)
 }
 
 
+
+// public function getChartData(Request $request)
+// {
+//     $month = $request->month;
+//     $year = $request->year;
+//     $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
+
+//     $incomeData = [];
+//     $expenseData = [];
+//     $days = [];
+ 
+//     $incomes = Earning::selectRaw('DAY(happened_on) as day, SUM(amount) as total')
+//         ->whereMonth('happened_on', $month)
+//         ->whereYear('happened_on', $year)
+//         ->groupBy('day')
+//         ->pluck('total', 'day');  
+ 
+//     $expenses = Spending::selectRaw('DAY(happened_on) as day, SUM(amount) as total')
+//         ->whereMonth('happened_on', $month)
+//         ->whereYear('happened_on', $year)
+//         ->groupBy('day')
+//         ->pluck('total', 'day');
+ 
+//     for ($day = 1; $day <= $daysInMonth; $day++) {
+//         $incomeData[] = $incomes[$day] ?? 0;   
+//         $expenseData[] = $expenses[$day] ?? 0;  
+//         $days[] = $day;
+//     }
+
+//     return response()->json([
+//         'incomeData' => $incomeData,
+//         'expenseData' => $expenseData,
+//         'days' => $days,
+//     ]);
+// }
+
+
+// public function checkBudgetAlerts()
+// {
+//     $currentMonth = Carbon::now()->format('m');
+//     $currentYear = Carbon::now()->format('Y');
+
+//     $alerts = [];
+
+//     $budgets = Budget::whereMonth('starts_on', $currentMonth)
+//         ->whereYear('starts_on', $currentYear)
+//         ->get(); 
+
+
+//     foreach ($budgets as $budget) {
+//         $tagId = $budget->tag_id;
+
+//         $totalSpent = Spending::where('tag_id', $tagId)
+//             ->whereMonth('happened_on', $currentMonth)
+//             ->whereYear('happened_on', $currentYear)
+//             ->sum('amount');
+
+//         if ($totalSpent >= $budget->amount) {
+//             $alerts[] = [
+//                 'type' => 'danger',
+//                 'message' => $budget->tag->name . ' budget is over!',
+//             ];
+//         } elseif ($totalSpent >= ($budget->amount * 0.8)) {
+//             $alerts[] = [
+//                 'type' => 'warning',
+//                 'message' => $budget->tag->name . ' budget is almost used up!',
+//             ];
+//         }
+//     }
+
+//     return response()->json($alerts);
+// }
+
+
 public function checkBudgetAlerts()
 {
-    $currentMonth = Carbon::now()->format('m');
-    $currentYear = Carbon::now()->format('Y');
+    $currentMonth = Carbon::now()->month;
+    $currentYear = Carbon::now()->year;
+
+    $spaceId = Auth::id(); 
 
     $alerts = [];
 
-    $budgets = Budget::whereMonth('starts_on', $currentMonth)
+    $budgets = Budget::where('space_id', $spaceId)
+        ->whereMonth('starts_on', $currentMonth)
         ->whereYear('starts_on', $currentYear)
-        ->get(); 
-
+        ->get();
 
     foreach ($budgets as $budget) {
         $tagId = $budget->tag_id;
 
-        $totalSpent = Spending::where('tag_id', $tagId)
+        $totalSpent = Spending::where('tag_id', $tagId) 
+            ->where('space_id', $spaceId)
             ->whereMonth('happened_on', $currentMonth)
             ->whereYear('happened_on', $currentYear)
             ->sum('amount');
@@ -251,5 +333,6 @@ public function checkBudgetAlerts()
 
     return response()->json($alerts);
 }
+
  
 }
