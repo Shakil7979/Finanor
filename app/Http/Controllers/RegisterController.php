@@ -44,7 +44,7 @@ class RegisterController extends Controller
             'pending_registration' => [
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt($request->password),
+                'password' => $request->password,
                 'currency' => $request->currency,
             ]
         ]);

@@ -297,8 +297,14 @@
                             <li>
                                 <dropdown>
                                     <span slot="button" class="sk_header_user" style="display: flex; gap:5px; align-items:center"> 
-                                        <p class="sk_name">{{Auth::user()->name}} </p>
-                                        <img src="{{ asset(Auth::user()->avatar) }}" class="avatar mr-05" /> <i class="fas fa-caret-down fa-sm"></i>
+                                        <p class="sk_name">{{Auth::user()->name}} </p>  
+
+                                        @if (Auth::user()->avatar !== 'https://via.placeholder.com/250')
+                                            <img src="{{ asset(Auth::user()->avatar) }}" class="avatar mr-05" />
+                                        @else
+                                            <i class="fas fa-user fa-lg text-gray-600"></i>
+                                        @endif
+                                        <i class="fas fa-caret-down fa-sm"></i>
                                     </span>
                                     <ul slot="menu" v-cloak>
                                         {{-- <li>
