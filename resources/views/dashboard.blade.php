@@ -106,8 +106,7 @@
                 @endif 
             </div>
         </div>
-
-
+ 
         <div class="row row--gutter row--responsive my-3">
             @foreach ($widgets as $widget)
                 <div class="row__column">
@@ -118,7 +117,7 @@
         @if (count($mostExpensiveTags)) 
             <div class="expes-row"> 
                 <div class="box  flex-col">
-                    <div class="box__section box__section--header">Most Expensive {{ __('models.tags') }}</div>
+                    <div class="box__section box__section--header">📊 Most Expensive {{ __('models.tags') }}</div>
                     <div class="expense-content">
                         @foreach ($mostExpensiveTags as $index => $tag)
                             <div class="box__section row row--seperate">
@@ -180,7 +179,7 @@
         @endif 
         <div class="expes-row mt-3">
             <div class="box  flex-col">  
-                <div class="box__section box__section--header">Monthly Report for {{date('F')}}</div>  
+                <div class="box__section box__section--header">📊 Monthly Report for {{date('F')}}</div>  
                 <div class="box__section">   
                     <canvas id="incomeExpenseChart" height="250"></canvas>  
                 </div>
@@ -188,7 +187,7 @@
             <div class="box  flex-col"> 
                 <div class="monthly-header">
                     <div class="box__section box__section--header">
-                        <h3>Filter By Monthly</h3>
+                        <h3>📊 Filter By Monthly</h3>
                         <div class="box_month_filter">
                             <select id="month">
                                 <option value="">Select Month</option>
@@ -215,7 +214,7 @@
 
         <div class="expes-row mt-3">
             <div class="box flex-col">
-            <div class="box__section box__section--header">Emotion by Chart</div>
+            <div class="box__section box__section--header">📊 Emotion by Chart</div>
                 <div class="box__section">  
                     <div class="box_for_emotion">
                         <emotion-chart />
@@ -331,9 +330,16 @@
     function updateChart(days, incomeData, expenseData) {
         const ctx = document.getElementById('incomeExpenseChart_filter_monthly').getContext('2d');
 
+
         // Set a fixed height for the chart canvas programmatically
         const chartCanvas = document.getElementById('incomeExpenseChart_filter_monthly');
         chartCanvas.height = 250; // Set height to 250px
+        incomeData = incomeData.map(value => value / 100);
+        expenseData = expenseData.map(value => value / 100);
+
+        console.log(incomeData);
+        console.log(expenseData);
+
 
         if (chartInstance) {
             chartInstance.destroy();
