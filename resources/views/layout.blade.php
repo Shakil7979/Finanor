@@ -298,7 +298,6 @@
                                 <dropdown>
                                     <span slot="button" class="sk_header_user" style="display: flex; gap:5px; align-items:center"> 
                                         <p class="sk_name">{{Auth::user()->name}} </p>  
-
                                         @if (Auth::user()->avatar !== 'https://via.placeholder.com/250')
                                             <img src="{{ asset(Auth::user()->avatar) }}" class="avatar mr-05" />
                                         @else
@@ -355,9 +354,9 @@
                 </div>
             @endif
             @yield('body')
-            @if (auth()->check())
+            {{-- @if (auth()->check())
                 <div class="text-center mb-3">{{ $versionNumber }}</div>
-            @endif
+            @endif --}}
         </div>
         @vite('resources/assets/js/app.js')
         
