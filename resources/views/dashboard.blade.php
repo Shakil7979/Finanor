@@ -99,9 +99,9 @@
                         <p style="font-size: 18px; margin: 0;">
                             🕒 One month ago, on <strong>{{ \Carbon\Carbon::parse($flashbackDate)->format('j F') }}</strong>, 
                             you spent <strong>{{ $currency }}{{ number_format($flashbackAmount, 2) }}</strong> 
-                            on <strong>{{ $flashbackTag }}</strong>.
+                            on <strong>"{{ $flashbackTag }}"</strong> Tag.
                         </p>
-                        <p style="color: #718096; font-size: 14px; margin-top: 6px;">Worth it?</p>
+                        {{-- <p style="color: #718096; font-size: 14px; margin-top: 6px;">Worth it?</p> --}}
                     </div>
                 @endif 
             </div>
